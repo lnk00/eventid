@@ -4,10 +4,11 @@ import {
   RouterOutlet,
   ServiceWorkerRegister,
 } from '@builder.io/qwik-city';
-
+import dotenv from 'dotenv';
 import globalStyles from './global.css?inline';
 
 export default component$(() => {
+  dotenv.config();
   useStyles$(globalStyles);
 
   return (
