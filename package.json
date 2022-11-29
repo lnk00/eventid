@@ -39,6 +39,7 @@
     "vite-tsconfig-paths": "3.5.0"
   },
   "dependencies": {
+    "dayjs": "^1.11.6",
     "dotenv": "^16.0.3"
   }
 }
