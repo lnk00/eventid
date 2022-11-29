@@ -1,7 +1,6 @@
 import { component$, Resource } from '@builder.io/qwik';
 import { RequestHandler, useEndpoint } from '@builder.io/qwik-city';
 import dotenv from 'dotenv';
-import days from 'dayjs';
 import dayjs from 'dayjs';
 
 export interface Event {
@@ -11,6 +10,11 @@ export interface Event {
   url: string;
   image: string;
   date: string;
+  price: {
+    currency: string;
+    min: number;
+    max: number;
+  };
 }
 
 export const urlBuilder = () => {
@@ -47,6 +51,11 @@ export const onGet: RequestHandler<Event[]> = async () => {
       url: element.url,
       image: element.images.find((img: any) => img.ratio === '4_3').url,
       date: dayjs(element.dates.start.dateTime).format('DD MMM YY - hh:mm A'),
+      price: {
+        currency: element.priceRanges['0'].currency,
+        min: element.priceRanges['0'].min,
+        max: element.priceRanges['0'].max,
+      },
     });
   });
 
@@ -76,9 +85,9 @@ export default component$(() => {
               {events.map((event) => (
                 <div class="bg-white rounded-md shadow-lg mr-8 w-[260px]">
                   <img src={event.image} class="rounded-t-md h-48" />
-                  <div class="p-4">
+                  <div class="p-4 flex flex-col">
                     <div class="mb-1 flex justify-between items-center">
-                      <p class="text-lg font-bold">{event.name}</p>
+                      <p class="text-lg font-black">{event.name}</p>
                       <div class="flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -97,7 +106,7 @@ export default component$(() => {
                         </p>
                       </div>
                     </div>
-                    <div class="bg-zinc-100 rounded px-2 py-1 text-xs items-center inline-flex mb-1">
+                    <div class="bg-zinc-100 rounded px-2 py-1 text-xs items-center inline-flex self-start">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
@@ -112,6 +121,32 @@ export default component$(() => {
                         />
                       </svg>
                       <span class="ml-1">{event.date}</span>
+                    </div>
+
+                    <div class="rounded bg-teal-100 p-2 flex justify-between items-center mt-2">
+                      <div class="flex items-baseline">
+                        <p class="font-semibold text-xs mr-1">From</p>
+                        <p class="font-black mr-1">{event.price.min}€</p>
+                      </div>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                        />
+                      </svg>
+
+                      <div class="flex items-baseline">
+                        <p class="font-semibold text-xs mr-1">To</p>
+                        <p class="font-black mr-1">{event.price.max}€</p>
+                      </div>
                     </div>
 
                     <div class="bg-teal-400 hover:bg-teal-300 py-2 text-white rounded cursor-pointer mt-2 text-center">
