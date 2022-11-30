@@ -3,6 +3,38 @@ import { RequestHandler, useEndpoint } from '@builder.io/qwik-city';
 import dotenv from 'dotenv';
 import dayjs from 'dayjs';
 
+export interface TopCity {
+  label: string;
+  position: string;
+}
+
+export const topCities: TopCity[] = [
+  {
+    label: 'New york, USA',
+    position: '',
+  },
+  {
+    label: 'Paris, France',
+    position: '',
+  },
+  {
+    label: 'Berlin, Germany',
+    position: '',
+  },
+  {
+    label: 'Seoul, Korea',
+    position: '',
+  },
+  {
+    label: 'Toronto, Canada',
+    position: '',
+  },
+  {
+    label: 'Buenos aires, Argentina',
+    position: '',
+  },
+];
+
 export interface Event {
   name: string;
   description: string;
@@ -10,7 +42,7 @@ export interface Event {
   url: string;
   image: string;
   date: string;
-  price: {
+  price?: {
     currency: string;
     min: number;
     max: number;
@@ -20,17 +52,17 @@ export interface Event {
 export const urlBuilder = () => {
   const token = process.env.TICKETMASTER_API_KEY;
   const type = 'music';
-  const location = '48.8566140,2.3522219';
+  const location = '40.434733611106836,-3.689844845968338';
   const radius = '100';
   const unit = 'km';
   const local = '*';
   const startDate = new Date();
-  const endDate = new Date(new Date().setMonth(startDate.getMonth() + 1));
+  const endDate = new Date(new Date().setDate(startDate.getDate() + 7));
   const url = `https://app.ticketmaster.com/discovery/v2/events?apikey=${token}&keyword=${type}&latlong=${location}&radius=${radius}&unit=${unit}&locale=${local}&startDateTime=${startDate
     .toISOString()
     .replace(/.\d+Z$/g, 'Z')}&endDateTime=${endDate
     .toISOString()
-    .replace(/.\d+Z$/g, 'Z')}&page=1`;
+    .replace(/.\d+Z$/g, 'Z')}&sort=random`;
 
   return url;
 };
@@ -43,6 +75,10 @@ export const onGet: RequestHandler<Event[]> = async () => {
   const res = await fetch(url);
   const data = await res.json();
 
+  if (!data._embedded) {
+    return [];
+  }
+
   data._embedded.events.forEach((element: any) => {
     events.push({
       name: element.name,
@@ -51,11 +87,15 @@ export const onGet: RequestHandler<Event[]> = async () => {
       url: element.url,
       image: element.images.find((img: any) => img.ratio === '4_3').url,
       date: dayjs(element.dates.start.dateTime).format('DD MMM YY - hh:mm A'),
-      price: {
-        currency: element.priceRanges['0'].currency,
-        min: element.priceRanges['0'].min,
-        max: element.priceRanges['0'].max,
-      },
+      price: element.priceRanges
+        ? {
+            currency: element.priceRanges
+              ? element.priceRanges['0'].currency
+              : '',
+            min: element.priceRanges ? element.priceRanges['0'].min : 0,
+            max: element.priceRanges ? element.priceRanges['0'].max : 0,
+          }
+        : undefined,
     });
   });
 
@@ -76,6 +116,7 @@ export default component$(() => {
   return (
     <div class="flex flex-col items-center justify-center h-screen w-screen bg-white">
       <div class="mb-8 max-w-4xl w-full">
+        <h1 class="font-black text-teal-400 text-6xl mb-4">Events nearby</h1>
         <div class="flex items-center rounded-full border-zinc-100 border-2 h-12 w-full overflow-hidden pl-4">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -92,12 +133,21 @@ export default component$(() => {
 
           <input
             type="search"
-            placeholder="New york, USA"
+            placeholder="Paris, France"
             class="w-full focus:outline-none mr-2"
           />
           <div class="ml-auto h-full w-24 rounded-r-full bg-teal-400 hover:bg-teal-300 shrink-0 font-semibold text-white flex justify-center items-center cursor-pointer">
             Search
           </div>
+        </div>
+        <div class="flex items-center mt-2 w-full h-8 px-6">
+          {topCities.map((city) => {
+            return (
+              <div class="rounded bg-zinc-100 hover:bg-teal-300 hover:text-white font-semibold text-xs h-full flex items-center justify-center px-2 cursor-pointer mr-2">
+                {city.label}
+              </div>
+            );
+          })}
         </div>
       </div>
       <div class="flex items-center max-w-4xl justify-center w-screen">
@@ -113,8 +163,10 @@ export default component$(() => {
                     <img src={event.image} class="rounded-t-md h-48" />
                     <div class="p-4 flex flex-col">
                       <div class="mb-1 flex justify-between items-center">
-                        <p class="text-lg font-black">{event.name}</p>
-                        <div class="flex items-center">
+                        <p class="text-lg font-black text-ellipsis whitespace-nowrap overflow-hidden">
+                          {event.name}
+                        </p>
+                        <div class="flex items-center shrink-0">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 20 20"
@@ -149,31 +201,39 @@ export default component$(() => {
                         <span class="ml-1">{event.date}</span>
                       </div>
 
-                      <div class="rounded bg-teal-100 p-2 flex justify-between items-center mt-2">
-                        <div class="flex items-baseline">
-                          <p class="font-semibold text-xs mr-1">From</p>
-                          <p class="font-black mr-1">{event.price.min}€</p>
-                        </div>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-5 h-5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                          />
-                        </svg>
+                      {event.price ? (
+                        <div class="rounded bg-teal-100 p-2 flex justify-between items-center mt-2">
+                          <div class="flex items-baseline">
+                            <p class="font-semibold text-xs mr-1">From</p>
+                            <p class="font-black mr-1">{event.price.min}€</p>
+                          </div>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-5 h-5"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                            />
+                          </svg>
 
-                        <div class="flex items-baseline">
-                          <p class="font-semibold text-xs mr-1">To</p>
-                          <p class="font-black mr-1">{event.price.max}€</p>
+                          <div class="flex items-baseline">
+                            <p class="font-semibold text-xs mr-1">To</p>
+                            <p class="font-black mr-1">{event.price.max}€</p>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div class="rounded bg-teal-100 p-2 flex justify-between items-center mt-2">
+                          <div class="flex items-baseline">
+                            <p class="font-black mr-1">Unkown Price</p>
+                          </div>
+                        </div>
+                      )}
 
                       <div class="bg-teal-400 hover:bg-teal-300 py-2 text-white rounded cursor-pointer mt-2 text-center">
                         <p>Get your tickets</p>
