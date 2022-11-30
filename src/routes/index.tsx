@@ -10,28 +10,28 @@ export interface TopCity {
 
 export const topCities: TopCity[] = [
   {
-    label: 'New york, USA',
-    position: '',
+    label: 'Log Angeles, USA',
+    position: '34.08529901255528,-118.39357320557158',
   },
   {
     label: 'Paris, France',
-    position: '',
+    position: '48.85951116665961,2.335703471976787',
   },
   {
-    label: 'Berlin, Germany',
-    position: '',
+    label: 'Madrid, Spain',
+    position: '40.42584819565037,-3.689844845968338',
   },
   {
-    label: 'Seoul, Korea',
-    position: '',
+    label: 'Marseille, France',
+    position: '43.31773918157906,5.373087073541116',
   },
   {
     label: 'Toronto, Canada',
-    position: '',
+    position: '43.7020145146627,-79.3423847221593',
   },
   {
-    label: 'Buenos aires, Argentina',
-    position: '',
+    label: 'Las Vegas, USA',
+    position: '36.12568067615163,-115.18264791503012',
   },
 ];
 
@@ -52,7 +52,7 @@ export interface Event {
 export const urlBuilder = () => {
   const token = process.env.TICKETMASTER_API_KEY;
   const type = 'music';
-  const location = '40.434733611106836,-3.689844845968338';
+  const location = '34.08529901255528,-118.39357320557158';
   const radius = '100';
   const unit = 'km';
   const local = '*';
@@ -114,10 +114,13 @@ export default component$(() => {
   const events = useEndpoint<typeof onGet>();
 
   return (
-    <div class="flex flex-col items-center justify-center h-screen w-screen bg-white">
+    <div class="flex flex-col items-center justify-center h-screen w-screen bg-white px-8">
       <div class="mb-8 max-w-4xl w-full">
-        <h1 class="font-black text-teal-400 text-6xl mb-4">Events nearby</h1>
-        <div class="flex items-center rounded-full border-zinc-100 border-2 h-12 w-full overflow-hidden pl-4">
+        <div class="flex items-baseline">
+          <h1 class="font-black text-teal-400 text-6xl mb-4">Events nearby</h1>
+          <h2 class="font-black text-zinc-300 text-2xl ml-2">This week</h2>
+        </div>
+        <div class="flex items-center rounded-lg border-zinc-100 border-2 h-12 w-full overflow-hidden pl-4">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
@@ -136,11 +139,11 @@ export default component$(() => {
             placeholder="Paris, France"
             class="w-full focus:outline-none mr-2"
           />
-          <div class="ml-auto h-full w-24 rounded-r-full bg-teal-400 hover:bg-teal-300 shrink-0 font-semibold text-white flex justify-center items-center cursor-pointer">
+          <div class="ml-auto h-full w-24 rounded-r-lg bg-teal-400 hover:bg-teal-300 shrink-0 font-semibold text-white flex justify-center items-center cursor-pointer">
             Search
           </div>
         </div>
-        <div class="flex items-center mt-2 w-full h-8 px-6">
+        <div class="flex items-center mt-2 w-full h-8">
           {topCities.map((city) => {
             return (
               <div class="rounded bg-zinc-100 hover:bg-teal-300 hover:text-white font-semibold text-xs h-full flex items-center justify-center px-2 cursor-pointer mr-2">
@@ -150,16 +153,16 @@ export default component$(() => {
           })}
         </div>
       </div>
-      <div class="flex items-center max-w-4xl justify-center w-screen">
+      <div class="flex items-center max-w-4xl justify-center w-full">
         <Resource
           value={events}
           onPending={() => <div>Loading...</div>}
           onRejected={() => <div>Error</div>}
           onResolved={(events: Event[]) => {
             return (
-              <div class="flex justify-between w-full">
+              <div class="flex flex-wrap justify-between w-full">
                 {events.map((event) => (
-                  <div class="bg-white rounded-md shadow-lg w-[260px]">
+                  <div class="bg-white rounded-md shadow-lg w-[260px] shrink-0">
                     <img src={event.image} class="rounded-t-md h-48" />
                     <div class="p-4 flex flex-col">
                       <div class="mb-1 flex justify-between items-center">
