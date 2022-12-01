@@ -1,54 +1,23 @@
-import { component$, Resource } from '@builder.io/qwik';
-import { RequestHandler, useEndpoint } from '@builder.io/qwik-city';
-import dayjs from 'dayjs';
+import {
+  component$,
+  Resource,
+  useResource$,
+  useContext,
+} from '@builder.io/qwik';
 import { Event } from '~/models/event';
 import Card from '~/components/card';
 import SearchBar from '~/components/searchBar';
-import { urlBuilder } from '~/helpers/builders';
-
-export const onGet: RequestHandler<Event[]> = async () => {
-  const events: Event[] = [];
-  const url = urlBuilder();
-  const res = await fetch(url);
-  const data = await res.json();
-
-  if (!data._embedded) {
-    return [];
-  }
-
-  data._embedded.events.forEach((element: any) => {
-    events.push({
-      name: element.name,
-      description: element.description,
-      distance: element.distance,
-      url: element.url,
-      image: element.images.find((img: any) => img.ratio === '4_3').url,
-      date: dayjs(element.dates.start.dateTime).format('DD MMM YY - hh:mm A'),
-      price: element.priceRanges
-        ? {
-            currency: element.priceRanges
-              ? element.priceRanges['0'].currency
-              : '',
-            min: element.priceRanges ? element.priceRanges['0'].min : 0,
-            max: element.priceRanges ? element.priceRanges['0'].max : 0,
-          }
-        : undefined,
-    });
-  });
-
-  const e = events.reduce((acc: Event[], ev: Event) => {
-    const isFound = acc.find((elem: Event) => elem.name === ev.name);
-    if (!isFound) {
-      acc.push(ev);
-    }
-    return acc;
-  }, []);
-
-  return e.slice(0, 3);
-};
+import { CTX } from '~/root';
+import { getEvents } from '~/helpers/getter';
 
 export default component$(() => {
-  const events = useEndpoint<typeof onGet>();
+  const store = useContext(CTX);
+
+  const events = useResource$<Event[]>(async (ctx) => {
+    ctx.track(() => store.location);
+    const res = await getEvents(store.location, store.token);
+    return res;
+  });
 
   return (
     <div class="flex flex-col items-center justify-center h-screen w-screen bg-white px-8">
@@ -62,8 +31,12 @@ export default component$(() => {
       <div class="flex items-center max-w-4xl justify-center w-full">
         <Resource
           value={events}
-          onPending={() => <div>Loading...</div>}
-          onRejected={() => <div>Error</div>}
+          onPending={() => (
+            <div class="h-[376px] w-full bg-zinc-100 rounded flex items-center justify-center"></div>
+          )}
+          onRejected={() => (
+            <div class="h-[376px] w-full bg-zinc-100 rounded flex items-center justify-center"></div>
+          )}
           onResolved={(events: Event[]) => {
             return (
               <div class="flex flex-wrap justify-between w-full">

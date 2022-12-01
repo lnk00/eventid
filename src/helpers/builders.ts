@@ -1,11 +1,5 @@
-import dotenv from 'dotenv';
-
-export const urlBuilder = () => {
-  dotenv.config();
-
-  const token = process.env.TICKETMASTER_API_KEY;
+export const urlBuilder = (location: string, token: string) => {
   const type = 'music';
-  const location = '34.08529901255528,-118.39357320557158';
   const radius = '100';
   const unit = 'km';
   const local = '*';

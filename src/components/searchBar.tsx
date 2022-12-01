@@ -1,4 +1,5 @@
-import { component$ } from '@builder.io/qwik';
+import { component$, useContext } from '@builder.io/qwik';
+import { CTX } from '~/root';
 
 export interface TopCity {
   label: string;
@@ -33,6 +34,8 @@ export const topCities: TopCity[] = [
 ];
 
 export default component$(() => {
+  const store = useContext(CTX);
+
   return (
     <>
       <div class="flex items-center rounded-lg border-zinc-100 border-2 h-12 w-full overflow-hidden pl-4">
@@ -61,7 +64,10 @@ export default component$(() => {
       <div class="flex items-center mt-2 w-full h-8">
         {topCities.map((city) => {
           return (
-            <div class="rounded bg-zinc-100 hover:bg-teal-300 hover:text-white font-semibold text-xs h-full flex items-center justify-center px-2 cursor-pointer mr-2">
+            <div
+              onClick$={() => (store.location = city.position)}
+              class="rounded bg-zinc-100 hover:bg-teal-300 hover:text-white font-semibold text-xs h-full flex items-center justify-center px-2 cursor-pointer mr-2"
+            >
               {city.label}
             </div>
           );
