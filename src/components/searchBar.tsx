@@ -1,38 +1,6 @@
 import { component$, useContext } from '@builder.io/qwik';
 import { CTX } from '~/root';
 
-export interface TopCity {
-  label: string;
-  position: string;
-}
-
-export const topCities: TopCity[] = [
-  {
-    label: 'Log Angeles, USA',
-    position: '34.08529901255528,-118.39357320557158',
-  },
-  {
-    label: 'Paris, France',
-    position: '48.85951116665961,2.335703471976787',
-  },
-  {
-    label: 'Madrid, Spain',
-    position: '40.42584819565037,-3.689844845968338',
-  },
-  {
-    label: 'Marseille, France',
-    position: '43.31773918157906,5.373087073541116',
-  },
-  {
-    label: 'Toronto, Canada',
-    position: '43.7020145146627,-79.3423847221593',
-  },
-  {
-    label: 'Las Vegas, USA',
-    position: '36.12568067615163,-115.18264791503012',
-  },
-];
-
 export default component$(() => {
   const store = useContext(CTX);
 
@@ -62,7 +30,7 @@ export default component$(() => {
         </div>
       </div>
       <div class="flex items-center mt-2 w-full h-8">
-        {topCities.map((city) => {
+        {store.topCities.map((city) => {
           return (
             <div
               onClick$={() => (store.location = city.position)}
